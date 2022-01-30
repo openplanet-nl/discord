@@ -1,0 +1,7 @@
+[meta]
+name = "Discord Rich Presence"
+author = "Openplanet"
+category = "Utilities"
+
+[script]
+imports = [ "Dialogs.as", "Icons.as", "Formatting.as" ]
