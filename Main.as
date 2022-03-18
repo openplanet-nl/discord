@@ -213,7 +213,7 @@ void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, 
 			status.State = "Editing map";
 		}
 
-		auto mediaTracker = cast<CGameCtnMediaTracker>(editor);
+		auto mediaTracker = cast<CGameEditorMediaTracker>(editor);
 		if (mediaTracker !is null) {
 			if (Setting_DisplayLevelNameEditor) {
 				auto currentMap = GetCurrentMap();
