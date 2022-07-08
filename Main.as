@@ -162,6 +162,7 @@ int GetSecondsLeft()
 		return 0;
 	}
 
+#if !TMNEXT
 	// TrackMania
 	auto interfaceTM = cast<CTrackManiaRaceInterface>(g_app.CurrentPlayground.Interface);
 	if (interfaceTM !is null) {
@@ -169,6 +170,7 @@ int GetSecondsLeft()
 			return int(interfaceTM.TimeCountDown) / 1000;
 		}
 	}
+#endif
 
 	// ShootMania
 	auto interfaceSM = cast<CSmArenaInterfaceUI>(g_app.CurrentPlayground.Interface);
