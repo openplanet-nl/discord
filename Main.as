@@ -146,12 +146,14 @@ int GetServerPosition()
 		return 0;
 	}
 
+#if !TMNEXT
 	auto interfaceTM = cast<CTrackManiaRaceInterface>(g_app.CurrentPlayground.Interface);
-	if (interfaceTM is null) {
-		return 0;
+	if (interfaceTM !is null) {
+		return interfaceTM.PlayerGeneralPosition;
 	}
+#endif
 
-	return interfaceTM.PlayerGeneralPosition;
+	return 0;
 }
 
 int GetSecondsLeft()
