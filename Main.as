@@ -162,8 +162,32 @@ int GetSecondsLeft()
 		return 0;
 	}
 
-#if !TMNEXT
-	// TrackMania
+#if TMNEXT
+	// Trackmania
+	auto manialinkPages = g_app.Network.GetManialinkPages();
+	if (manialinkPages !is null) {
+		for (uint i = 0; i < manialinkPages.Length; i++) {
+			auto page = manialinkPages[i];
+			if (page.MainFrame.Controls.Length == 0) {
+				continue;
+			}
+			auto pageFrame = cast<CGameManialinkFrame>(page.MainFrame.Controls[0]);
+			if (pageFrame is null || pageFrame.Controls.Length != 1) {
+				continue;
+			}
+			if (pageFrame.Controls[0].ControlId != "Race_Countdown") {
+				continue;
+			}
+			auto labelCountdown = cast<CGameManialinkLabel>(pageFrame.GetFirstChild("label-countdown"));
+			if (labelCountdown is null) {
+				continue;
+			}
+			return GetSecondsForTime(labelCountdown.Value);
+		}
+	}
+
+#else
+	// Maniaplanet
 	auto interfaceTM = cast<CTrackManiaRaceInterface>(g_app.CurrentPlayground.Interface);
 	if (interfaceTM !is null) {
 		if (int(interfaceTM.TimeCountDown) > 0) {
