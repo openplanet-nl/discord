@@ -290,8 +290,13 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 	int numPlayers = g_app.BuddiesManager.CurrentServerPlayerCount - 1; // -1 because 1 of these is the server account
 	int maxPlayers = g_app.BuddiesManager.CurrentServerPlayerCountMax;
 #else
-	int numPlayers = g_app.ChatManagerScript.CurrentServerPlayerCount - 1; // -1 because 1 of these is the server account
-	int maxPlayers = g_app.ChatManagerScript.CurrentServerPlayerCountMax;
+	int numPlayers = 0;
+	int maxPlayers = 0;
+	// Not sure why this can be null but Nsgr reported it once (July 12th 2022)
+	if (g_app.ChatManagerScript !is null) {
+		numPlayers = g_app.ChatManagerScript.CurrentServerPlayerCount - 1; // -1 because 1 of these is the server account
+		maxPlayers = g_app.ChatManagerScript.CurrentServerPlayerCountMax;
+	}
 #endif
 
 	int position = GetServerPosition();
