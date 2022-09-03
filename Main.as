@@ -73,10 +73,16 @@ string GetTitleBaseId(CGameManiaTitle@ title)
 
 int GetSecondsForTime(string _time)
 {
+	if (_time == "") {
+		return 0;
+	}
+
 	_time = StripFormatCodes(_time);
 	auto parse = _time.Split(":");
 
-	int hours, minutes, seconds;
+	int hours = 0;
+	int minutes = 0;
+	int seconds = 0;
 
 	if (parse.Length == 3) {
 		hours = Text::ParseInt(parse[0]);
