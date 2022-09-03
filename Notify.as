@@ -62,11 +62,11 @@ class NotifyString
 	private string m_value;
 
 	NotifyString() { m_value = ""; }
-	NotifyString(string value) { m_value = value; }
+	NotifyString(const string &in value) { m_value = value; }
 
 	string opImplConv() const { return m_value; }
 
-	NotifyString@ opAssign(string value)
+	NotifyString@ opAssign(const string &in value)
 	{
 		if (m_value != value) {
 			m_value = value;

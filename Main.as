@@ -71,10 +71,10 @@ string GetTitleBaseId(CGameManiaTitle@ title)
 	return title.IdName;
 }
 
-int GetSecondsForTime(string time)
+int GetSecondsForTime(string _time)
 {
-	time = StripFormatCodes(time);
-	auto parse = time.Split(":");
+	_time = StripFormatCodes(_time);
+	auto parse = _time.Split(":");
 
 	int hours, minutes, seconds;
 
@@ -92,7 +92,7 @@ int GetSecondsForTime(string time)
 	return (hours * 3600) + (minutes * 60) + seconds;
 }
 
-CControlBase@ FindControl(CControlBase@ control, string id)
+CControlBase@ FindControl(CControlBase@ control, const string &in id)
 {
 	if (control.IdName == id) {
 		return control;
