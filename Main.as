@@ -289,9 +289,6 @@ void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, 
 		auto interfaceDesigner = cast<CGameEditorManialink>(editorBase);
 		if (interfaceDesigner !is null) { status.State = "In interface designer"; }
 
-		auto badgeEditor = cast<CGameEditorBadge>(editorBase);
-		if (badgeEditor !is null) { status.State = "In badge editor"; }
-
 		auto animSetEditor = cast<CGameEditorAnimSet>(editorBase);
 		if (animSetEditor !is null) { status.State = "In animation set editor"; }
 	}
