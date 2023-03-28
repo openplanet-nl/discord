@@ -337,7 +337,7 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 		status.Details = Nth(position) + " | ";
 	}
 
-	if (challenge !is null) {
+	if (challenge !is null && Setting_DisplayLevelNameOnline) {
 #if TMNEXT
 		if (g_currentServicesMapInfo.m_uid == challenge.IdName) {
 			status.LargeImageKey = g_currentServicesMapInfo.m_thumbUrl;
@@ -348,24 +348,26 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 		status.Details += "In server";
 	}
 
+	if (Setting_DisplayServerInfoOnline) {
 #if TURBO
-	status.State = g_serverDisplayName;
+		status.State = g_serverDisplayName;
 #else
-	status.State = StripFormatCodes(serverInfo.ServerName);
+		status.State = StripFormatCodes(serverInfo.ServerName);
 #endif
-	status.PartyId = serverInfo.ServerLogin;
+		status.PartyId = serverInfo.ServerLogin;
+
+		string serverLink = serverInfo.ServerLogin + "@" + title.IdName;
+		status.JoinSecret = serverLink;
+		status.SpectateSecret = "spec|" + serverLink;
+
+		status.PartySize = numPlayers;
+		status.PartyMax = maxPlayers;
+	}
 
 	if (secondsLeft > 0) {
 		status.StartTimestamp = g_inServerTimeStart;
 		status.EndTimestamp = Time::Stamp + secondsLeft;
 	}
-
-	string serverLink = serverInfo.ServerLogin + "@" + title.IdName;
-	status.JoinSecret = serverLink;
-	status.SpectateSecret = "spec|" + serverLink;
-
-	status.PartySize = numPlayers;
-	status.PartyMax = maxPlayers;
 
 	Discord::SetStatus(status);
 }
@@ -592,6 +594,8 @@ void Main()
 		if (g_statusMode == 1 && !Setting_DisplayLevelNameEditor) {
 			canFetchCurrentMap = false;
 		} else if (g_statusMode == 2 && !Setting_DisplayLevelNameSolo) {
+			canFetchCurrentMap = false;
+		} else if (g_statusMode == 0 && !Setting_DisplayLevelNameOnline) {
 			canFetchCurrentMap = false;
 		}
 
