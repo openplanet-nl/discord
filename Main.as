@@ -174,6 +174,9 @@ int GetSecondsLeft()
 	if (manialinkPages !is null) {
 		for (uint i = 0; i < manialinkPages.Length; i++) {
 			auto page = manialinkPages[i];
+			if (page is null || page.MainFrame is null) {
+				continue;
+			}
 			if (page.MainFrame.Controls.Length == 0) {
 				continue;
 			}
