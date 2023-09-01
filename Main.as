@@ -301,7 +301,7 @@ void SetStatus_TitleSolo(CGameCtnChallenge@ challenge, CGameManiaTitle@ title)
 	Discord::Status status = GetTitleStatus(title);
 	if (Setting_DisplayLevelNameSolo) {
 #if TMNEXT
-		if (g_currentServicesMapInfo.m_uid == challenge.IdName) {
+		if (g_currentServicesMapInfo !is null && challenge !is null && g_currentServicesMapInfo.m_uid == challenge.IdName) {
 			status.LargeImageKey = g_currentServicesMapInfo.m_thumbUrl;
 		}
 #endif
