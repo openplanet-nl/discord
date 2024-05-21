@@ -33,7 +33,7 @@ string GetMapName(CGameCtnChallenge@ challenge)
 		return "#" + challenge.MapName;
 	}
 #endif
-	return StripFormatCodes(challenge.MapName);
+	return Text::StripFormatCodes(challenge.MapName);
 }
 
 void OnDisabled()
@@ -77,7 +77,7 @@ int GetSecondsForTime(string _time)
 		return 0;
 	}
 
-	_time = StripFormatCodes(_time);
+	_time = Text::StripFormatCodes(_time);
 	auto parse = _time.Split(":");
 
 	int hours = 0;
@@ -133,7 +133,7 @@ Discord::Status GetTitleStatus(CGameManiaTitle@ title)
 		}
 	}
 
-	status.LargeImageText = StripFormatCodes(title.Name);
+	status.LargeImageText = Text::StripFormatCodes(title.Name);
 	return status;
 }
 
@@ -352,7 +352,7 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 #if TURBO
 		status.State = g_serverDisplayName;
 #else
-		status.State = StripFormatCodes(serverInfo.ServerName);
+		status.State = Text::StripFormatCodes(serverInfo.ServerName);
 #endif
 		status.PartyId = serverInfo.ServerLogin;
 
