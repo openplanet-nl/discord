@@ -491,7 +491,7 @@ void Main()
 	}
 
 	auto user = Discord::GetUser();
-	print("Discord is ready: " + user.Name + "#" + user.Discriminator + " (ID " + user.ID + ")");
+	print("Discord is ready: " + user.Name + " (ID " + user.ID + ")");
 
 #if !TURBO && !TMNEXT
 	while (g_app.CurrentProfile is null) {
