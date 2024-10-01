@@ -247,7 +247,11 @@ void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, 
 			status.State = "Editing map";
 		}
 
+#if TMNEXT
 		auto mediaTracker = cast<CGameEditorMediaTracker>(editor);
+#else
+		auto mediaTracker = cast<CGameCtnMediaTracker>(editor);
+#endif
 		if (mediaTracker !is null) {
 			if (Setting_DisplayLevelNameEditor) {
 				auto currentMap = GetCurrentMap();
@@ -608,7 +612,9 @@ void Main()
 
 			inMapUid = currentMap.IdName;
 		} else {
+#if TMNEXT
 			g_currentServicesMapInfo.m_uid = "";
+#endif
 		}
 
 		if (g_updateQueued) {
