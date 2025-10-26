@@ -1,4 +1,4 @@
-CGameManiaPlanet@ g_app;
+CTrackMania@ g_app;
 
 bool g_updateQueued = false;
 
@@ -33,7 +33,23 @@ string GetMapName(CGameCtnChallenge@ challenge)
 		return "#" + challenge.MapName;
 	}
 #endif
-	return Text::StripFormatCodes(challenge.MapName);
+
+	return Text::StripFormatCodes(
+#if FOREVER
+		challenge.ChallengeName
+#else
+		challenge.MapName
+#endif
+	);
+}
+
+string GetServerLogin(CGameCtnNetServerInfo@ serverInfo)
+{
+#if FOREVER
+	return serverInfo.ServerHostName;
+#else
+	return serverInfo.ServerLogin;
+#endif
 }
 
 void OnDisabled()
@@ -61,14 +77,6 @@ string Nth(int n)
 	}
 
 	return n + "th";
-}
-
-string GetTitleBaseId(CGameManiaTitle@ title)
-{
-	if (title.BaseTitleId != "") {
-		return title.BaseTitleId;
-	}
-	return title.IdName;
 }
 
 int GetSecondsForTime(string _time)
@@ -119,11 +127,25 @@ CControlBase@ FindControl(CControlBase@ control, const string &in id)
 	return null;
 }
 
-Discord::Status GetTitleStatus(CGameManiaTitle@ title)
+Discord::Status GetTitleStatus()
 {
 	Discord::Status status;
 
-	status.LargeImageKey = GetTitleBaseId(title).ToLower();
+#if UNITED_FOREVER
+	status.LargeImageKey = "united";
+	status.LargeImageText = "TrackMania United Forever";
+
+#elif NATIONS_FOREVER
+	status.LargeImageKey = "nations";
+	status.LargeImageText = "TrackMania Nations Forever";
+
+#else
+	auto title = g_app.LoadedManiaTitle;
+
+	status.LargeImageKey = title.BaseTitleId.ToLower();
+	if (titleBaseId == "") {
+		status.LargeImageKey = title.IdName.ToLower();
+	}
 
 	auto keys = g_titles.GetKeys();
 	for (uint i = 0; i < keys.Length; i++) {
@@ -134,6 +156,8 @@ Discord::Status GetTitleStatus(CGameManiaTitle@ title)
 	}
 
 	status.LargeImageText = Text::StripFormatCodes(title.Name);
+#endif
+
 	return status;
 }
 
@@ -155,7 +179,11 @@ int GetServerPosition()
 #if !TMNEXT
 	auto interfaceTM = cast<CTrackManiaRaceInterface>(g_app.CurrentPlayground.Interface);
 	if (interfaceTM !is null) {
+#if FOREVER
+		return Text::ParseInt(interfaceTM.CurrentRacePositionText);
+#else
 		return interfaceTM.PlayerGeneralPosition;
+#endif
 	}
 #endif
 
@@ -202,6 +230,7 @@ int GetSecondsLeft()
 	}
 #endif
 
+#if !FOREVER
 	// ShootMania
 	auto interfaceSM = cast<CSmArenaInterfaceUI>(g_app.CurrentPlayground.Interface);
 	if (interfaceSM !is null) {
@@ -210,6 +239,7 @@ int GetSecondsLeft()
 			return GetSecondsForTime(labelTimeLeft.Label);
 		}
 	}
+#endif
 
 	return 0;
 }
@@ -222,30 +252,32 @@ void SetStatus_MainMenu()
 	Discord::SetStatus(status);
 }
 
-void SetStatus_TitleMenu(CGameManiaTitle@ title)
+void SetStatus_TitleMenu()
 {
-	Discord::Status status = GetTitleStatus(title);
+	Discord::Status status = GetTitleStatus();
 	status.State = "In menu";
 	Discord::SetStatus(status);
 }
 
-void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, CGameManiaTitle@ title)
-{
-	Discord::Status status = GetTitleStatus(title);
+void SetStatus_TitleEditor(
+#if !FOREVER
+	CGameEditorBase@ editorBase,
+#endif
+	CGameCtnEditor@ editor
+) {
+	Discord::Status status = GetTitleStatus();
 
 	if (editor !is null) {
-		auto mapEditor = cast<CGameCtnEditorFree>(editor);
-		if (mapEditor !is null) {
-			if (Setting_DisplayLevelNameEditor) {
+		if (Setting_DisplayLevelNameEditor) {
+			auto currentMap = GetCurrentMap();
 #if TMNEXT
-				if (g_currentServicesMapInfo.m_uid == mapEditor.Challenge.IdName) {
-					status.LargeImageKey = g_currentServicesMapInfo.m_thumbUrl;
-				}
-#endif
-				status.Details = GetMapName(mapEditor.Challenge);
+			if (g_currentServicesMapInfo.m_uid == currentMap.IdName) {
+				status.LargeImageKey = g_currentServicesMapInfo.m_thumbUrl;
 			}
-			status.State = "Editing map";
+#endif
+			status.Details = GetMapName(currentMap);
 		}
+		status.State = "Editing map";
 
 #if TMNEXT
 		auto mediaTracker = cast<CGameEditorMediaTracker>(editor);
@@ -265,21 +297,25 @@ void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, 
 			status.State = "In Mediatracker";
 		}
 
+#if !FOREVER
 		auto itemEditor = cast<CGameEditorItem>(editor);
 		if (itemEditor !is null) { status.State = "In item editor"; }
+#endif
 
-#if !TURBO
+#if MP4 || TMNEXT
 		auto meshEditor = cast<CGameEditorMesh>(editor);
 		if (meshEditor !is null) { status.State = "In mesh editor"; }
 #endif
 
+#if !FOREVER
 		auto actionMaker = cast<CGameActionMaker>(editor);
 		if (actionMaker !is null) { status.State = "In action maker"; }
 
 		auto moduleEditor = cast<CGameEditorModule>(editor);
 		if (moduleEditor !is null) { status.State = "In module editor"; }
+#endif
 
-#if !TURBO
+#if MP4 || TMNEXT
 		auto editorEditor = cast<CGameEditorEditor>(editor);
 		if (editorEditor !is null) { status.State = "In editor editor"; }
 #endif
@@ -289,20 +325,22 @@ void SetStatus_TitleEditor(CGameEditorBase@ editorBase, CGameCtnEditor@ editor, 
 		if (pixelEditor !is null) { status.State = "In pixel editor"; }
 #endif
 
+#if !FOREVER
 	} else if (editorBase !is null) {
 		auto interfaceDesigner = cast<CGameEditorManialink>(editorBase);
 		if (interfaceDesigner !is null) { status.State = "In interface designer"; }
 
 		auto animSetEditor = cast<CGameEditorAnimSet>(editorBase);
 		if (animSetEditor !is null) { status.State = "In animation set editor"; }
+#endif
 	}
 
 	Discord::SetStatus(status);
 }
 
-void SetStatus_TitleSolo(CGameCtnChallenge@ challenge, CGameManiaTitle@ title)
+void SetStatus_TitleSolo(CGameCtnChallenge@ challenge)
 {
-	Discord::Status status = GetTitleStatus(title);
+	Discord::Status status = GetTitleStatus();
 	if (Setting_DisplayLevelNameSolo) {
 #if TMNEXT
 		if (g_currentServicesMapInfo !is null && challenge !is null && g_currentServicesMapInfo.m_uid == challenge.IdName) {
@@ -315,11 +353,14 @@ void SetStatus_TitleSolo(CGameCtnChallenge@ challenge, CGameManiaTitle@ title)
 	Discord::SetStatus(status);
 }
 
-void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serverInfo, CGameManiaTitle@ title)
+void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serverInfo)
 {
 #if TURBO
 	int numPlayers = g_app.BuddiesManager.CurrentServerPlayerCount - 1; // -1 because 1 of these is the server account
 	int maxPlayers = g_app.BuddiesManager.CurrentServerPlayerCountMax;
+#elif FOREVER
+	int numPlayers = int(serverInfo.PlayerCount) - 1; // -1 because 1 of these is the server account
+	int maxPlayers = int(serverInfo.MaxPlayerCount);
 #else
 	int numPlayers = 0;
 	int maxPlayers = 0;
@@ -334,7 +375,7 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 	int secondsLeft = GetSecondsLeft();
 	bool spectating = IsSpectating();
 
-	Discord::Status status = GetTitleStatus(title);
+	Discord::Status status = GetTitleStatus();
 	if (spectating) {
 		status.Details = "Spectating | ";
 	} else if (position > 0) {
@@ -358,11 +399,20 @@ void SetStatus_Server(CGameCtnChallenge@ challenge, CGameCtnNetServerInfo@ serve
 #else
 		status.State = Text::StripFormatCodes(serverInfo.ServerName);
 #endif
-		status.PartyId = serverInfo.ServerLogin;
 
-		string serverLink = serverInfo.ServerLogin + "@" + title.IdName;
-		status.JoinSecret = serverLink;
-		status.SpectateSecret = "spec|" + serverLink;
+		string serverLogin = GetServerLogin(serverInfo);
+		status.PartyId = serverLogin;
+
+#if FOREVER
+		status.JoinSecret = "join|" + serverLogin;
+		status.SpectateSecret = "spec|" + serverLogin;
+#else
+		if (g_app.LoadedManiaTitle !is null) {
+			string serverLink = serverLogin + "@" + g_app.LoadedManiaTitle.IdName;
+			status.JoinSecret = serverLink;
+			status.SpectateSecret = "spec|" + serverLink;
+		}
+#endif
 
 		status.PartySize = numPlayers;
 		status.PartyMax = maxPlayers;
@@ -382,13 +432,17 @@ void SetStatus()
 		return;
 	} else if (g_statusMode == 0) {
 		auto serverInfo = cast<CGameCtnNetServerInfo>(g_app.Network.ServerInfo);
-		SetStatus_Server(GetCurrentMap(), serverInfo, g_app.LoadedManiaTitle);
+		SetStatus_Server(GetCurrentMap(), serverInfo);
 	} else if (g_statusMode == 1) {
-		SetStatus_TitleEditor(g_app.EditorBase, g_app.Editor, g_app.LoadedManiaTitle);
+#if FOREVER
+		SetStatus_TitleEditor(g_app.Editor);
+#else
+		SetStatus_TitleEditor(g_app.EditorBase, g_app.Editor);
+#endif
 	} else if (g_statusMode == 2) {
-		SetStatus_TitleSolo(GetCurrentMap(), g_app.LoadedManiaTitle);
+		SetStatus_TitleSolo(GetCurrentMap());
 	} else if (g_statusMode == 3) {
-		SetStatus_TitleMenu(g_app.LoadedManiaTitle);
+		SetStatus_TitleMenu();
 	} else if (g_statusMode == 4) {
 		SetStatus_MainMenu();
 	}
@@ -396,25 +450,44 @@ void SetStatus()
 
 void JoinThread()
 {
+#if !FOREVER
 	while (g_app.ManiaTitles.Length == 0) {
 		yield();
 	}
+#endif
 
 	sleep(2000);
 
 	while (true) {
+#if FOREVER
+		string joinVerb = "join";
+#else
 		string joinVerb = "qjoin";
+#endif
 		string joinUrl = "";
 
 		string joinSecret = Discord::GetQueuedJoin();
 		if (joinSecret != "") {
 			joinUrl = joinSecret;
+			auto parse = joinSecret.Split("|", 2);
+			if (parse.Length == 2 && parse[0] == "join") {
+#if FOREVER
+				joinVerb = "join";
+#else
+				joinVerb = "qjoin";
+#endif
+				joinUrl = parse[1];
+			}
 		} else {
 			string spectateSecret = Discord::GetQueuedSpectate();
 			if (spectateSecret != "") {
 				auto parse = spectateSecret.Split("|", 2);
 				if (parse.Length == 2 && parse[0] == "spec") {
+#if FOREVER
+					joinVerb = "spectate";
+#else
 					joinVerb = "qspectate";
+#endif
 					joinUrl = parse[1];
 				}
 			}
@@ -423,7 +496,11 @@ void JoinThread()
 		if (joinUrl != "") {
 			print("Joining " + joinUrl);
 			joinUrl = "#" + joinVerb + "=" + joinUrl;
+#if FOREVER
+			// todo (sorry)
+#else
 			g_app.ManiaPlanetScriptAPI.OpenLink(joinUrl, CGameManiaPlanetScriptAPI::ELinkType::ManialinkBrowser);
+#endif
 		}
 
 		if (Discord::GetNumJoinRequests() > 0) {
@@ -478,7 +555,7 @@ void RenderInterface()
 
 void Main()
 {
-	@g_app = cast<CGameManiaPlanet>(GetApp());
+	@g_app = cast<CTrackMania>(GetApp());
 
 	print("Initializing Discord...");
 
@@ -486,6 +563,8 @@ void Main()
 	Discord::Initialize("689165864028864558");
 #elif TURBO
 	Discord::Initialize("500620964195991562");
+#elif FOREVER
+	Discord::Initialize("713505734515621939");
 #else
 	Discord::Initialize("415975536343646208");
 #endif
@@ -507,7 +586,9 @@ void Main()
 
 	startnew(JoinThread);
 
+#if !FOREVER
 	NotifyNod inTitle;
+#endif
 	NotifyNod inServerChallenge;
 	NotifyInt inServerPlayerCount;
 	NotifyInt inServerPosition;
@@ -523,7 +604,9 @@ void Main()
 
 		auto serverInfo = cast<CGameCtnNetServerInfo>(g_app.Network.ServerInfo);
 
+#if !FOREVER
 		inTitle = g_app.LoadedManiaTitle;
+#endif
 
 		auto currentMap = GetCurrentMap();
 
@@ -532,10 +615,18 @@ void Main()
 			currentFrame = g_app.ActiveMenus[0].CurrentFrame.IdName;
 		}
 
-		if (serverInfo !is null && serverInfo.ServerLogin != "") {
+		if (serverInfo !is null && GetServerLogin(serverInfo) != "") {
 			g_statusMode = 0;
-		} else if (g_app.LoadedManiaTitle !is null && currentFrame != "FrameManiaPlanetMain") {
+		} else if (
+#if !FOREVER
+			g_app.LoadedManiaTitle !is null &&
+#endif
+			currentFrame != "FrameManiaPlanetMain") {
+#if FOREVER
+			if (cast<CTrackManiaEditorCatalog>(g_app.Editor) !is null) {
+#else
 			if (g_app.Editor !is null) {
+#endif
 				g_statusMode = 1;
 			} else if (currentMap !is null) {
 				g_statusMode = 2;
@@ -547,9 +638,10 @@ void Main()
 		}
 
 		if (g_statusMode == 0) {
+			string serverLogin = GetServerLogin(serverInfo);
 #if TURBO
-			if (inServerLogin != serverInfo.ServerLogin) {
-				inServerLogin = serverInfo.ServerLogin;
+			if (inServerLogin != serverLogin) {
+				inServerLogin = serverLogin;
 				inServerDisplayName = "";
 				g_serverDisplayName = "";
 
@@ -575,7 +667,7 @@ void Main()
 				@g_serverDisplayNameTask = null;
 			}
 #else
-			inServerLogin = serverInfo.ServerLogin;
+			inServerLogin = serverLogin;
 #endif
 
 			if (inServerChallenge != currentMap) {

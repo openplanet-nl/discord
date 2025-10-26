@@ -1,3 +1,5 @@
+#if !FOREVER
+
 // Please contact Miss on the Openplanet Discord if you would like
 // your pack to be added to this list! I periodically add popular
 // title packs as well. You may also submit a pull request on Github.
@@ -67,3 +69,5 @@ dictionary g_titles = {
 	{ "TMOneRally@unbitn",  "title_dev" }
 #endif
 };
+
+#endif
