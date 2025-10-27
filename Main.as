@@ -143,7 +143,7 @@ Discord::Status GetTitleStatus()
 	auto title = g_app.LoadedManiaTitle;
 
 	status.LargeImageKey = title.BaseTitleId.ToLower();
-	if (titleBaseId == "") {
+	if (title.BaseTitleId == "") {
 		status.LargeImageKey = title.IdName.ToLower();
 	}
 
