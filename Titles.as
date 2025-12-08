@@ -39,6 +39,7 @@ dictionary g_titles = {
 	{ "Countdown@torrent",         "title_countdown" },
 	{ "GEs@guerro",                "title_stormium" },
 	{ "Platform@adamkooo",         "title_platform" },
+	{ "Envimix_Turbo@bigbang1112", "title_envimixturbo" },
 
 	// TM One has multiple pack owners
 	{ "TMOneAlpine@florenzius",    "title_tmonealpine" },
